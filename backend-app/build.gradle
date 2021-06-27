@@ -1,0 +1,62 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.2'
+	id 'java'
+	id "idea"
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'gradle-multiprj-vuejs-springboot'
+version = '1.0.0-RELEASE'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+idea {
+	module {
+		inheritOutputDirs = false
+		outputDir = file("$buildDir/classes/main/")
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+	}
+}
+
+dependencies {
+	def lombokVersion = "1.18.6"
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-devtools'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'io.springfox:springfox-swagger2:2.8.0'
+	implementation 'mysql:mysql-connector-java'
+
+	implementation group: 'org.eclipse.collections', name: 'eclipse-collections-api', version: '11.0.0.M2'
+	implementation group: 'org.eclipse.collections', name: 'eclipse-collections', version: '11.0.0.M2'
+	implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+	implementation group: 'com.ibm.icu', name: 'icu4j', version: '69.1'
+
+	// for lombok
+	// testAnnotationProcessor、testCompileOnly を併記しなくてよいよう configurations で設定している
+	annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+	compileOnly("org.projectlombok:lombok:${lombokVersion}")
+}
+
+clean.delete fileTree("src/main/resources/static").include("**/*")
+task copyDistToStatic(type: Copy) {
+	from project(":frontend-app").file("dist")
+	into "src/main/resources/static"
+}
+copyDistToStatic.dependsOn ":frontend-app:build"
+processResources.dependsOn copyDistToStatic
