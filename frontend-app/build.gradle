@@ -1,0 +1,26 @@
+plugins {
+	id "base"
+	id "com.github.node-gradle.node" version "3.0.1"
+}
+
+node {
+	// Version of node to use.
+	version = '16.4.0'
+}
+
+clean.delete
+
+task npmBuild(type:NpmTask) {
+	args = ["run", "build"]
+	execOverrides {
+		it.standardOutput = new ByteArrayOutputStream()
+	}
+}
+
+task copyDistToStatic(type: Copy) {
+	from project(":frontend-app").file("dist")
+	into "src/main/resources/static"
+}
+
+build.dependsOn copyDistToStatic
+copyDistToStatic.dependsOn npmBuild
