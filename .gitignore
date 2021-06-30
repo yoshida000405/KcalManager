@@ -6,6 +6,7 @@ build
 .gitattributes
 .settings/
 
+frontend-app/src/main/resources/static/
 frontend-app/.browserslistrc
 frontend-app/.vscode/settings.json
 frontend-app/node_modules
