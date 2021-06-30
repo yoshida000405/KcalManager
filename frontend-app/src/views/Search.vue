@@ -98,8 +98,8 @@
 						let params = new URLSearchParams();
 						params.append("url", url);
 						axios.post("/api/check", params).then((res) => {
-							if (res.data != undefined) {
-								this.info = res.data;
+							this.info = res.data;
+							if (this.info[0] != undefined) {
 								this.nameList = [];
 								this.candidateList = [];
 								this.valueList = [];
@@ -116,7 +116,7 @@
 								this.selectFlag = true;
 								this.url = url;
 							} else {
-								console.log("レシピが見つかりませんでした！");
+								alert("レシピが見つかりませんでした！");
 							}
 						});
 					}
@@ -140,6 +140,13 @@
 						this.selectFlag = false;
 						this.$router.push("result");
 					});
+				}
+			},
+		},
+		watch: {
+			$route: function (to, from) {
+				if (to.path !== from.path) {
+					store.commit("listUpdate");
 				}
 			},
 		},

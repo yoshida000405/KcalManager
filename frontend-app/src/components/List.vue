@@ -1,30 +1,32 @@
 <template>
-	<div class="mt-5 clearfix">
-		<div class="col-md-1 float-left"><h5>.</h5></div>
-		<table class="col-md-5 float-left table table-bordered table-hover">
+	<div class="mt-5 clearfix ml-5 mr-5">
+		<table class="table table-bordered table-hover">
 			<tbody>
-				<tr v-for="(item, index) in $store.state.lists1" :key="index">
-					<th scope="row" @click="detailFormOpen(index)">{{ index }}</th>
-					<td>{{ item }}</td>
+				<tr v-for="index of $store.state.list.length" :key="index">
+					<th
+						scope="row"
+						@click="detailFormOpen($store.state.genre[(index - 1) * 2])"
+					>
+						{{ $store.state.genre[(index - 1) * 2] }}
+					</th>
+					<td>{{ $store.state.list[index - 1][0] }}</td>
+					<th
+						scope="row"
+						@click="detailFormOpen($store.state.genre[(index - 1) * 2 + 1])"
+					>
+						{{ $store.state.genre[(index - 1) * 2 + 1] }}
+					</th>
+					<td>
+						{{ $store.state.list[index - 1][1] }}
+					</td>
 				</tr>
 			</tbody>
 		</table>
-		<table class="col-md-5 float-left table table-bordered table-hover">
-			<tbody>
-				<tr v-for="(item, index) in $store.state.lists2" :key="index">
-					<th scope="row" @click="detailFormOpen(index)">{{ index }}</th>
-					<td>{{ item }}</td>
-				</tr>
-			</tbody>
-		</table>
-		<div class="col-md-1 float-left"></div>
 	</div>
 </template>
 
 <script lang="ts">
 	import { defineComponent } from "vue";
-	import jQuery from "jquery";
-	import store from "../store/index";
 
 	export default defineComponent({
 		name: "List",

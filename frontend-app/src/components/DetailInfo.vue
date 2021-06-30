@@ -2,27 +2,38 @@
 	<div class="container">
 		<div class="add-product">
 			<div class="form">
-				<h5>{{ type }}</h5>
+				<h5>{{ $store.state.type }}</h5>
 				<table class="table table-bordered table-hover">
 					<tbody>
-						<tr v-for="(item, index) in foodArray" :key="index">
+						<tr v-for="(item, index) in $store.state.foodArray" :key="index">
 							<th scope="row">{{ item }}</th>
-							<td>{{ typeArray[index] }} g</td>
+							<td v-if="$store.state.type == 'カロリー'">
+								{{ $store.state.typeArray[index] }} kcal
+							</td>
+							<td v-else-if="$store.state.type == '材料費'">
+								{{ $store.state.typeArray[index] }} 円
+							</td>
+							<td v-else>{{ $store.state.typeArray[index] }} g</td>
 							<td>
 								<input
 									type="number"
 									name="gram"
 									required=""
-									:value="gramArray[index]"
+									:value="$store.state.gramArray[index]"
 									@change="change(index, $event.target.value)"
 								/>
 							</td>
 						</tr>
 						<tr>
-							<!-- TODO kcal priceの単位 -->
 							<th scope="row">合計</th>
-							<td>{{ total }} g</td>
-							<td>{{ gram }} g</td>
+							<td v-if="$store.state.type == 'カロリー'">
+								{{ $store.state.typeTotal }} kcal
+							</td>
+							<td v-else-if="$store.state.type == '材料費'">
+								{{ $store.state.typeTotal }} 円
+							</td>
+							<td v-else>{{ $store.state.typeTotal }} g</td>
+							<td>{{ $store.state.gram }} g</td>
 						</tr>
 					</tbody>
 				</table>
@@ -34,41 +45,11 @@
 
 <script lang="ts">
 	import { defineComponent } from "vue";
-	import jQuery from "jquery";
-	import store from "../store/index";
 
 	export default defineComponent({
 		name: "DetailInfo",
 		emits: ["detail-form-change", "detail-form-close", "detail-gram-change"],
-		data(): {
-			foodArray: string[];
-			gramArray: number[];
-			typeArray: number[];
-			gram: number;
-			total: number;
-			type: any;
-		} {
-			return {
-				foodArray: store.state.foodArray,
-				gramArray: store.state.gramArray,
-				typeArray: store.state.typeArray,
-				gram: store.state.gram,
-				total: store.state.typeTotal,
-				type: store.state.type,
-			};
-		},
-		computed: {
-			flag() {
-				return store.state.detailFlag;
-			},
-			type() {
-				var typeArray = [];
-				for (const elem of store.state.typeArray) {
-					typeArray.push(elem);
-				}
-				return typeArray;
-			},
-		},
+		computed: {},
 		methods: {
 			cancel: function () {
 				this.$emit("detail-form-close");
@@ -77,34 +58,7 @@
 				this.$emit("detail-gram-change", gram, id + 1);
 			},
 		},
-		watch: {
-			flag(val, old) {
-				this.foodArray = store.state.foodArray;
-				this.gramArray = store.state.gramArray;
-				this.typeArray = store.state.typeArray;
-				this.gram = store.state.gram;
-				this.total = store.state.typeTotal;
-				this.type = store.state.type;
-			},
-			type(val, old) {
-				this.foodArray = store.state.foodArray;
-				this.gramArray = store.state.gramArray;
-				this.typeArray = store.state.typeArray;
-				this.gram = store.state.gram;
-				this.total = store.state.typeTotal;
-				this.type = store.state.type;
-			},
-			$route: function (to, from) {
-				if (to.path !== from.path) {
-					this.foodArray = store.state.foodArray;
-					this.gramArray = store.state.gramArray;
-					this.typeArray = store.state.typeArray;
-					this.gram = store.state.gram;
-					this.total = store.state.typeTotal;
-					this.type = store.state.type;
-				}
-			},
-		},
+		watch: {},
 	});
 </script>
 

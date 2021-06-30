@@ -4,7 +4,7 @@
 			<select v-model="category" @change="selectCategory">
 				<option value="1">全選択</option>
 				<option
-					v-for="(value, index) in categoryName"
+					v-for="(value, index) in $store.state.category"
 					:key="index + 2"
 					:value="index + 2"
 				>
@@ -39,7 +39,6 @@
 
 <script lang="ts">
 	import { defineComponent } from "vue";
-	import jQuery from "jquery";
 	import store from "../store/index";
 	import Select2 from "vue3-select2-component";
 	import FoodInfo from "./FoodInfo.vue";
@@ -59,11 +58,8 @@
 				this.$emit("food-form-open", this.id.replace("foodstuff", ""));
 			},
 			setCategory(type: string) {
-				this.categoryInfo = store.state.categoryInfo[this.category];
-				if (
-					(this.myOptions.length > 1000 && type == "auto") ||
-					type == "manual"
-				) {
+				var categoryInfo = store.state.categoryInfo[this.category];
+				if (type == "manual") {
 					this.$emit(
 						"change-category",
 						this.category,
@@ -76,12 +72,12 @@
 				} else {
 					if (this.myOptions.length > 1000) {
 						this.myOptions = this.myOptions.filter((elem) =>
-							this.categoryInfo.includes(elem)
+							categoryInfo.includes(elem)
 						);
 					} else {
 						this.myOptions = [];
-						for (var key in this.categoryInfo) {
-							this.myOptions.push(this.categoryInfo[key]);
+						for (var key in categoryInfo) {
+							this.myOptions.push(categoryInfo[key]);
 						}
 					}
 				}
@@ -92,30 +88,15 @@
 			},
 		},
 		data(): {
-			oldGram: Number;
 			gram: Number;
 			category: string;
-			oldfood: string;
 			food: string;
-			categoryName: string[];
-			categoryInfo: string[];
-			foodInfo: {};
 			myOptions: string[];
 		} {
 			return {
-				oldGram: 0,
 				gram: store.state.gramArray[this.index - 1],
 				category: store.state.categoryArray[this.index - 1],
-				oldfood: "",
 				food: store.state.foodArray[this.index - 1],
-				categoryName: store.state.category,
-				categoryInfo: [],
-				foodInfo: {
-					kcal: 0,
-					protein: 0,
-					fat: 0,
-					carbohydrate: 0,
-				},
 				myOptions: store.state.allFood,
 			};
 		},
@@ -127,11 +108,6 @@
 			},
 		},
 		computed: {
-			validation: function () {
-				jQuery(function ($) {
-					$(function () {});
-				});
-			},
 			nowGram() {
 				var str: string = this.id.replace("foodstuff", "");
 				return store.state.gramArray[Number(str) - 1];
@@ -145,7 +121,6 @@
 					return this.gram;
 				},
 				set(gram: Number) {
-					this.oldGram = this.gram;
 					this.gram = gram;
 					this.$emit("change-gram", gram, this.id.replace("foodstuff", ""));
 				},
@@ -162,8 +137,6 @@
 				},
 				set(food: string) {
 					this.$emit("change-food", food, this.id.replace("foodstuff", ""));
-					this.$emit("category-validation", this.id.replace("foodstuff", ""));
-					this.foodInfo = store.state.foodInfo[this.food];
 					this.category =
 						store.state.categoryArray[
 							Number(this.id.replace("foodstuff", "")) - 1

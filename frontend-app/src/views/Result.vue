@@ -10,7 +10,7 @@
 		</div>
 		<div class="mt-5 clearfix">
 			<component
-				v-for="item of array"
+				v-for="item of $store.state.formArray"
 				:key="item"
 				:is="assignTemplate"
 				@changeGram="changeGram"
@@ -22,14 +22,21 @@
 			>
 			</component>
 		</div>
-		<div class="mt-5 mb-5 text-right mr-5">
-			<button class="btn btn-success btn-lg mr-5" @click="register">
-				登録
-			</button>
-			<button class="btn btn-primary btn-lg mr-5" @click="addForm">追加</button>
-			<button class="btn btn-secondary btn-lg mr-5" @click="removeForm">
-				削除
-			</button>
+		<div class="mt-5 clearfix">
+			<div class="col-md-4 mt-5 mb-5 ml-5 text-left float-left">
+				<input v-model.lazy="setPortion" />　人分
+			</div>
+			<div class="col-md-7 mt-5 mb-5 mr-5 text-right float-left">
+				<button class="btn btn-success btn-lg mr-5" @click="register">
+					登録
+				</button>
+				<button class="btn btn-primary btn-lg mr-5" @click="addForm">
+					追加
+				</button>
+				<button class="btn btn-secondary btn-lg mr-5" @click="removeForm">
+					削除
+				</button>
+			</div>
 		</div>
 	</div>
 	<food-info
@@ -38,19 +45,7 @@
 		@foodFormChange="foodFormChange"
 		@foodFormClose="foodFormClose"
 		v-bind="{
-			id: productData['id'],
-			foodname: productData['foodname'],
-			price: productData['price'],
-			gram: Number(productData['gram']),
-			kcal: productData['kcal'],
-			prortein: productData['protein'],
-			fat: productData['fat'],
-			carbohydrate: productData['carbohydrate'],
-			vitaminA: Number(productData['vitaminA']),
-			vitaminB1: productData['vitaminB1'],
-			vitaminB2: productData['vitaminB2'],
-			vitaminB6: productData['vitaminB6'],
-			vitaminB12: productData['vitaminB12'],
+			id: foodId,
 		}"
 	></food-info>
 	<detail-info
@@ -87,70 +82,14 @@
 		data(): {
 			foodFormFlag: any;
 			detailFormFlag: boolean;
-			type: string;
-			gramArray: number[];
-			totalGram: number;
-			totalKcal: number;
-			totalProtein: number;
-			totalFat: number;
-			totalCarbohydrate: number;
-			totalVitaminA: number;
-			totalVitaminB1: number;
-			totalVitaminB2: number;
-			totalVitaminB6: number;
-			totalVitaminB12: number;
 			assignTemplate: String;
-			foodArray: string[];
-			array: number[];
-			productData: {
-				id: number;
-				foodname: string;
-				price: number;
-				gram: number;
-				kcal: number;
-				protein: number;
-				fat: number;
-				carbohydrate: number;
-				vitaminA: number;
-				vitaminB1: number;
-				vitaminB2: number;
-				vitaminB6: number;
-				vitaminB12: number;
-			};
+			foodId: number;
 		} {
 			return {
 				foodFormFlag: false,
 				detailFormFlag: false,
-				type: "",
-				gramArray: [0],
-				totalGram: 0,
-				totalKcal: 0,
-				totalProtein: 0,
-				totalFat: 0,
-				totalCarbohydrate: 0,
-				totalVitaminA: 0,
-				totalVitaminB1: 0,
-				totalVitaminB2: 0,
-				totalVitaminB6: 0,
-				totalVitaminB12: 0,
 				assignTemplate: "foodstuff",
-				foodArray: [""],
-				array: store.state.formArray,
-				productData: {
-					id: 0,
-					foodname: "",
-					price: 0,
-					gram: 0,
-					kcal: 0,
-					protein: 0,
-					fat: 0,
-					carbohydrate: 0,
-					vitaminA: 0,
-					vitaminB1: 0,
-					vitaminB2: 0,
-					vitaminB6: 0,
-					vitaminB12: 0,
-				},
+				foodId: 0,
 			};
 		},
 		methods: {
@@ -163,7 +102,7 @@
 			foodFormOpen(id: string) {
 				if (store.state.foodArray[Number(id) - 1] != "") {
 					store.commit("foodFormOpen", { id });
-					this.productData["id"] = Number(id);
+					this.foodId = Number(id);
 					store.commit("foodFormChange");
 				} else {
 					alert("食材を選択してください！");
@@ -196,7 +135,6 @@
 				store.commit("listUpdate");
 			},
 			detailFormOpen(type: string) {
-				this.type = type;
 				store.commit("detailFormOpen", { type });
 				store.commit("detailFormChange");
 			},
@@ -204,7 +142,7 @@
 				store.commit("detailFormChange");
 			},
 			detailGramChange(gram: number, id: number) {
-				store.commit("detailGramChange", { type: this.type, gram: gram, id: id });
+				store.commit("detailGramChange", { gram: gram, id: id });
 				store.commit("changeGram", { gram, id });
 				store.commit("listUpdate");
 			},
@@ -227,6 +165,15 @@
 			detailFlag() {
 				return store.state.detailFlag;
 			},
+			setPortion: {
+				get() {
+					return store.state.portion;
+				},
+				set(portion: number) {
+					store.commit("setPortion", { portion });
+					store.commit("listUpdate");
+				},
+			},
 		},
 		watch: {
 			foodFlag(val, old) {
@@ -238,7 +185,6 @@
 			$route: function (to, from) {
 				if (to.path !== from.path) {
 					store.commit("getDefaultState");
-					console.log("route");
 				}
 			},
 		},

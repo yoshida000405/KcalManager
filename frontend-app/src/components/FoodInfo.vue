@@ -3,145 +3,46 @@
 		<div class="add-product">
 			<div class="form">
 				<div class="form--field">
-					<label>{{ this.foodFormInfo["name"] }}</label>
+					<label>{{ $store.state.foodFormInfo["name"] }}</label>
 				</div>
-				<div class="form--container -inline">
-					<div class="form--field -short">
-						<label>価格</label>
-						<input
-							type="text"
-							class="form--element"
-							name="price"
-							required=""
-							v-model="this.foodFormInfo['price']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>カロリー</label>
-						<input
-							type="text"
-							class="form--element"
-							name="kcal"
-							required=""
-							v-model="this.foodFormInfo['kcal']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>使用料</label>
-						<input
-							type="number"
-							class="form--element"
-							name="gram"
-							required=""
-							v-model.lazy="inputGram"
-						/>
-					</div>
+				<div class="form--field -short">
+					<label>使用料</label>
+					<input
+						type="number"
+						class="form--element"
+						name="gram"
+						required=""
+						v-model.lazy="inputGram"
+					/>
 				</div>
-				<div class="form--container -inline">
+				<div
+					v-for="index of Math.floor($store.state.genre.length / 3)"
+					:key="index"
+					class="form--container -inline mt-3"
+				>
 					<div class="form--field -short">
-						<label>タンパク質</label>
-						<input
-							type="text"
-							class="form--element"
-							name="protein"
-							required=""
-							v-model="this.foodFormInfo['protein']"
-							disabled
-						/>
+						<label>{{ $store.state.genre[(index - 1) * 3] }}</label>
+						{{
+							$store.state.foodFormInfo[
+								$store.state.genreEnglish[4 + (index - 1) * 3]
+							]
+						}}
 					</div>
 					<div class="form--field -short">
-						<label>脂質</label>
-						<input
-							type="text"
-							class="form--element"
-							name="fat"
-							required=""
-							v-model="this.foodFormInfo['fat']"
-							disabled
-						/>
+						<label>{{ $store.state.genre[(index - 1) * 3 + 1] }}</label>
+						{{
+							$store.state.foodFormInfo[
+								$store.state.genreEnglish[5 + (index - 1) * 3]
+							]
+						}}
 					</div>
 					<div class="form--field -short">
-						<label>炭水化物</label>
-						<input
-							type="text"
-							class="form--element"
-							name="carbohydrate"
-							required=""
-							v-model="this.foodFormInfo['carbohydrate']"
-							disabled
-						/>
-					</div>
-				</div>
-				<div class="form--container -inline">
-					<div class="form--field -short">
-						<label>ビタミンA</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminA"
-							required=""
-							v-model="this.foodFormInfo['vitaminA']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>ビタミンB1</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminB1"
-							required=""
-							v-model="this.foodFormInfo['vitaminB1']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>ビタミンB2</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminB2"
-							required=""
-							v-model="this.foodFormInfo['vitaminB2']"
-							disabled
-						/>
-					</div>
-				</div>
-				<div class="form--container -inline">
-					<div class="form--field -short">
-						<label>ビタミンB6</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminB6"
-							required=""
-							v-model="this.foodFormInfo['vitaminB6']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>ビタミンB12</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminB12"
-							required=""
-							v-model="this.foodFormInfo['vitaminB12']"
-							disabled
-						/>
-					</div>
-					<div class="form--field -short">
-						<label>ビタミンB2</label>
-						<input
-							type="text"
-							class="form--element"
-							name="vitaminB2"
-							required=""
-							v-model="this.foodFormInfo['vitaminB2']"
-							disabled
-						/>
+						<label>{{ $store.state.genre[(index - 1) * 3 + 2] }}</label>
+						{{
+							$store.state.foodFormInfo[
+								$store.state.genreEnglish[6 + (index - 1) * 3]
+							]
+						}}
 					</div>
 				</div>
 				<button class="cancel-button" @click="cancel()">Cancel</button>
@@ -152,12 +53,7 @@
 
 <script lang="ts">
 	import { defineComponent } from "vue";
-	import jQuery from "jquery";
 	import store from "../store/index";
-
-	interface FoodFormInfo {
-		[key: string]: number | boolean | string;
-	}
 
 	export default defineComponent({
 		name: "FoodInfo",
@@ -170,56 +66,31 @@
 			},
 		},
 		data(): {
-			oldGram: any;
-			foodFormInfo: FoodFormInfo;
-			firstFlag: number;
+			gram: any;
+			genre: string;
 		} {
 			return {
-				oldGram: 0,
-				foodFormInfo: store.state.foodFormInfo,
-				firstFlag: 0,
+				gram: store.state.foodFormInfo["gram"],
+				genre: "protein",
 			};
 		},
 		computed: {
 			inputGram: {
 				get() {
-					if (this.firstFlag == 0) {
-						this.foodFormInfo = store.state.foodFormInfo;
-					}
 					return store.state.foodFormInfo["gram"];
 				},
 				set(gram: number) {
-					if (this.firstFlag == 0) {
-						this.firstFlag = 1;
-					}
-					this.oldGram = store.state.foodFormInfo["gram"];
 					this.change(gram);
 				},
-			},
-			flag() {
-				return store.state.foodFormInfo["flag"];
-			},
-			value() {
-				var num: number = this.id;
-				return store.state.foodFormInfo;
 			},
 		},
 		methods: {
 			cancel: function () {
-				this.firstFlag = 0;
 				this.$emit("food-form-close");
 			},
 			change: function (gram: number) {
 				this.$emit("change-gram", gram, this.id);
 				this.$emit("food-form-change", this.id);
-			},
-		},
-		watch: {
-			flag(val, old) {
-				this.foodFormInfo = store.state.foodFormInfo;
-			},
-			value(val, old) {
-				this.foodFormInfo = val;
 			},
 		},
 	});
