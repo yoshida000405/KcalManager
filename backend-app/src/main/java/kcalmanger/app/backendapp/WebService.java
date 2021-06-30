@@ -1,23 +1,6 @@
 package kcalmanger.app.backendapp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-import javax.net.ssl.HttpsURLConnection;
-
+import com.ibm.icu.text.Transliterator;
 import kcalmanger.app.backendapp.dao.jpa.FoodDetailsJpaRepository;
 import kcalmanger.app.backendapp.entity.FoodDetails;
 import org.eclipse.collections.api.tuple.Pair;
@@ -29,7 +12,17 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ibm.icu.text.Transliterator;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Service
 public class WebService {
@@ -48,6 +41,7 @@ public class WebService {
 	private static Pattern PATTERN_CUP = Pattern.compile("[0-9０-９]+\\.?[0-9０-９]+カップ|[0-9０-９]+カップ");
 	private static Pattern PATTERN_PIECE = Pattern.compile("[0-9０-９]+\\.?[0-9０-９]+個|[0-9０-９]+個");
 	private static Pattern PATTERN_CONVERT = Pattern.compile("converted\": \"[^\"]*\"");
+	private static Pattern PATTERN_JAPANESE = Pattern.compile("[^\\p{InHiragana}\\p{InKatakana}\\p{InCjkUnifiedIdeographs}]*");
 
 	private static Transliterator transliterator = Transliterator.getInstance("Fullwidth-Halfwidth");
 
@@ -116,12 +110,16 @@ public class WebService {
 				convert = matcher.group().replaceAll("converted\": \"", "");
 				convert = convert.replaceAll("\"", "");
 			}
+			matcher = PATTERN_JAPANESE.matcher(convert);
+			while (matcher.find()) {
+				convert = convert.replaceAll(matcher.group(), "");
+			}
 			returnList.add(convert);
 		}
 		return returnList;
 	}
 
-	public Pair<List<String>, List<String>> getRecipe(String url) throws IOException {
+	public Pair<List<String>, List<String>> getRecipe(String url) throws IOException, MalformedURLException {
 		List<String> nameList = new ArrayList<String>();
 		List<String> quantityList = new ArrayList<String>();
 		Document doc = Jsoup.connect(url).get();
@@ -140,8 +138,8 @@ public class WebService {
 		return Tuples.pair(nameList, quantityList);
 	}
 
-	public Map<List<FoodDetails>, String> searchFood(List<String> foodList) throws IOException {
-		Map<List<FoodDetails>, String> foodCandidate = new LinkedHashMap<List<FoodDetails>, String>();
+	public List<Pair<List<FoodDetails>, String>> searchFood(List<String> foodList) throws IOException {
+		List<Pair<List<FoodDetails>, String>> foodCandidate = new ArrayList<Pair<List<FoodDetails>, String>>();
 		foodList.stream().forEach((food) -> {
 			FoodDetails foodDetails = foodDetailsJpaRepository.findByNameKana(food);
 			List<FoodDetails> list;
@@ -150,16 +148,16 @@ public class WebService {
 				if (list.size() == 0) {
 					list = new ArrayList<>(Arrays.asList(new FoodDetails()));
 					list.get(0).setNameJapanese(food);
-					foodCandidate.put(list, food);
+					foodCandidate.add(Tuples.pair(list, food));
 				} else {
-					foodCandidate.put(list, food);
+					foodCandidate.add(Tuples.pair(list, food));
 					if (list.size() > 1) {
 						list.add(0, new FoodDetails());
 						list.get(0).setNameJapanese(food);
 					}
 				}
 			} else {
-				foodCandidate.put(new ArrayList<>(Arrays.asList(foodDetails)), food);
+				foodCandidate.add(Tuples.pair(new ArrayList<>(Arrays.asList(foodDetails)), food));
 			}
 		});
 		return foodCandidate;
@@ -174,8 +172,8 @@ public class WebService {
 			End: while (!flag) {
 				Matcher matcher = PATTERN_FRACTION.matcher(tempList.get(i));
 				while (matcher.find()) {
-					tempList.set(i, tempList.get(i).replaceAll(matcher.group(), "" + Arrays
-							.stream(Stream.of(matcher.group().split("/", 0)).mapToDouble(Double::parseDouble).toArray())
+					tempList.set(i, tempList.get(i).replaceAll(transliterator.transliterate(matcher.group()), "" + Arrays
+							.stream(Stream.of(transliterator.transliterate(matcher.group()).split("/", 0)).mapToDouble(Double::parseDouble).toArray())
 							.reduce(1, (result, element) -> {
 								return result / element;
 							})));
