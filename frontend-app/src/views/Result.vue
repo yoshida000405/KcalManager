@@ -1,7 +1,10 @@
 <template>
 	<div class="result" v-show="!foodFormFlag && !detailFormFlag">
 		<div class="text-place clearfix">
-			<div class="col-md-12 mt-5 position-relative parent float-left">
+			<div
+				id="round-graf"
+				class="col-md-12 mt-5 position-relative parent float-left"
+			>
 				<round-graf></round-graf>
 			</div>
 		</div>
@@ -10,15 +13,15 @@
 		</div>
 		<div class="mt-5 clearfix">
 			<component
-				v-for="item of $store.state.formArray"
+				v-for="(item, i) of $store.state.foodArray"
 				:key="item"
-				:is="assignTemplate"
+				:is="foodstuff"
 				@changeGram="changeGram"
 				@changeFood="changeFood"
 				@changeCategory="changeCategory"
 				@foodFormOpen="foodFormOpen"
 				@categoryValidation="categoryValidation"
-				v-bind="{ index: item }"
+				v-bind="{ index: i + 1 }"
 			>
 			</component>
 		</div>
@@ -44,6 +47,7 @@
 		@changeGram="changeGram"
 		@foodFormChange="foodFormChange"
 		@foodFormClose="foodFormClose"
+		@handleResize="handleResize"
 		v-bind="{
 			id: foodId,
 		}"
@@ -82,21 +86,33 @@
 		data(): {
 			foodFormFlag: any;
 			detailFormFlag: boolean;
-			assignTemplate: String;
+			foodstuff: String;
 			foodId: number;
 		} {
 			return {
 				foodFormFlag: false,
 				detailFormFlag: false,
-				assignTemplate: "foodstuff",
+				foodstuff: "foodstuff",
 				foodId: 0,
 			};
 		},
 		methods: {
+			window: (onload = function () {
+				store.commit("initialize");
+			}),
+			handleResize: function () {
+				store.commit("handleResize");
+			},
 			register() {
 				var recipename = window.prompt("レシピ名を入力してください", "");
 				if (recipename != "") {
-					store.commit("register", { recipename });
+					if (recipename != null) {
+						store.commit("registerRecipe", { recipename });
+						store.commit("getDefaultState");
+						store.commit("listUpdate");
+					}
+				} else {
+					alert("レシピ名を入力してください");
 				}
 			},
 			foodFormOpen(id: string) {
@@ -128,10 +144,10 @@
 				store.commit("listUpdate");
 			},
 			addForm() {
-				store.commit("addForm");
+				store.commit("addFoodForm");
 			},
 			removeForm() {
-				store.commit("removeForm");
+				store.commit("removeFoodForm");
 				store.commit("listUpdate");
 			},
 			detailFormOpen(type: string) {
@@ -157,6 +173,12 @@
 					$(".parent").height(biggestHeight);
 				}
 			});
+			window.addEventListener("resize", this.handleResize);
+			store.commit("handleResize");
+			store.commit("listUpdate");
+		},
+		beforeDestroy: function () {
+			window.removeEventListener("resize", this.handleResize);
 		},
 		computed: {
 			foodFlag() {

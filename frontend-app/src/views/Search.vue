@@ -107,7 +107,7 @@
 									this.nameList.push(elem["name"]);
 									this.candidateList.push(elem["candidate"]);
 									if (this.candidateList[index][0] == undefined) {
-										this.valueList.push("きび");
+										this.valueList.push("米");
 									} else {
 										this.valueList.push(this.candidateList[index][0]);
 									}
@@ -127,7 +127,6 @@
 			decision: function () {
 				var result = window.confirm("決定してもよろしいでしょうか？");
 				if (result) {
-					console.log(this.url);
 					let params = new URLSearchParams();
 					params.append("url", this.url);
 					for (var elem of this.valueList) {

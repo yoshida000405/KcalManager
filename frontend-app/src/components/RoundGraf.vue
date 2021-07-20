@@ -12,6 +12,7 @@
 		mounted: function () {
 			jQuery(function ($) {
 				$(function () {
+					$("#doughnutChart").empty();
 					$("#doughnutChart").drawDoughnutChart([
 						{
 							title: "タンパク質",
@@ -34,7 +35,7 @@
 		},
 		computed: {
 			gram() {
-				return store.state.gram;
+				return store.state.allInfo["gram"];
 			},
 			kcal() {
 				return store.state.allInfo["kcal"];
@@ -441,7 +442,7 @@
 	.chart {
 		position: absolute;
 		width: 450px;
-		height: 450px;
+		height: 360px;
 		top: 0%;
 		left: 50%;
 		transform: translateX(-50%);
@@ -488,7 +489,7 @@
 		position: absolute;
 		top: 50%;
 		width: 100%;
-		margin-top: -27%;
+		margin-top: -40%;
 		font-size: 22px;
 		letter-spacing: 0.06em;
 	}
@@ -496,7 +497,7 @@
 		position: absolute;
 		top: 50%;
 		width: 100%;
-		margin-top: -15%;
+		margin-top: -20%;
 		font-size: 55px;
 	}
 	.chart path:hover {

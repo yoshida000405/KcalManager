@@ -1,7 +1,9 @@
 <template>
 	<div id="nav">
 		<router-link to="/search">Search</router-link> |
-		<router-link to="/result">Result</router-link>
+		<router-link to="/result">Result</router-link> |
+		<router-link to="/list">List</router-link> |
+		<router-link to="/calendar">Calendar</router-link>
 	</div>
 	<router-view />
 </template>
@@ -31,3 +33,17 @@
 		color: #42b983;
 	}
 </style>
+
+<script lang="ts">
+	import { defineComponent } from "vue";
+	import store from "./store/index";
+
+	export default defineComponent({
+		name: "Calendar",
+		methods: {
+			window: (onload = function () {
+				store.commit("initialize");
+			}),
+		},
+	});
+</script>

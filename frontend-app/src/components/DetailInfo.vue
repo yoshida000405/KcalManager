@@ -33,7 +33,7 @@
 								{{ $store.state.typeTotal }} 円
 							</td>
 							<td v-else>{{ $store.state.typeTotal }} g</td>
-							<td>{{ $store.state.gram }} g</td>
+							<td>{{ $store.state.allInfo["gram"] }} g</td>
 						</tr>
 					</tbody>
 				</table>

@@ -1,15 +1,11 @@
 package kcalmanger.app.backendapp.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.persistence.*;
 
 
 /**
@@ -20,7 +16,7 @@ import lombok.Setter;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class FoodDetails {
+public class FoodDetails implements Cloneable{
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -241,5 +237,11 @@ public class FoodDetails {
 	@Column(name = "dietary_fiber")
 	private
 	String dietaryFiber;
+
+	@Override
+	public FoodDetails clone() throws CloneNotSupportedException {
+		FoodDetails clone = (FoodDetails) super.clone();
+		return clone;
+	}
 
 }

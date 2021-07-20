@@ -1,6 +1,6 @@
 <template>
 	<div class="mt-5 clearfix">
-		<div class="col-md-3 float-left">
+		<div class="float-left colum1">
 			<select v-model="category" @change="selectCategory">
 				<option value="1">全選択</option>
 				<option
@@ -12,26 +12,17 @@
 				</option>
 			</select>
 		</div>
-		<div class="col-md-3 float-left">
+		<div class="float-left colum2">
 			<Select2
 				v-model="selectFood"
 				:options="myOptions"
 				:settings="{ settingOption: value, settingOption: value }"
 			/>
 		</div>
-		<div class="col-md-2 float-left">
-			<select>
-				<option>g</option>
-				<option>ml</option>
-				<option>カップ</option>
-				<option>大さじ</option>
-				<option>小さじ</option>
-			</select>
-		</div>
-		<div class="col-md-2 float-left">
+		<div class="float-left colum3">
 			<input type="number" v-model.lazy="inputValue" />
 		</div>
-		<div class="col-md-2 float-left">
+		<div class="float-left colum4">
 			<button class="btn btn-primary" @click="foodFormOpen">詳細</button>
 		</div>
 	</div>
@@ -70,7 +61,7 @@
 				if (this.category == "1") {
 					this.myOptions = store.state.allFood;
 				} else {
-					if (this.myOptions.length > 1000) {
+					if (this.myOptions.length > 2000) {
 						this.myOptions = this.myOptions.filter((elem) =>
 							categoryInfo.includes(elem)
 						);
@@ -161,3 +152,90 @@
 		},
 	});
 </script>
+
+<style lang="scss">
+	@media screen and (max-width: 2300px) {
+		.colum1 {
+			width: 25% !important;
+			padding-left: 3rem;
+		}
+		.colum2 {
+			width: 25% !important;
+			text-align: center;
+		}
+		.colum3 {
+			width: 25% !important;
+			padding-right: 3rem;
+			text-align: right;
+		}
+		.colum4 {
+			width: 25% !important;
+			padding-right: 3rem;
+			text-align: right;
+		}
+	}
+
+	@media screen and (max-width: 1430px) {
+		.colum1 {
+			width: 40% !important;
+			margin: 5% 0 0 0;
+		}
+		.colum2 {
+			width: 40% !important;
+			margin: 5% 0 0 5%;
+		}
+		.colum3 {
+			width: 40% !important;
+			margin: 5% 0 0 5%;
+			text-align: center;
+		}
+		.colum4 {
+			width: 40% !important;
+			margin: 5% 0 0 5%;
+		}
+	}
+
+	@media screen and (max-width: 967px) {
+		.colum1 {
+			width: 100% !important;
+			margin: 5% 0 0 0;
+			text-align: left;
+		}
+		.colum2 {
+			width: 100% !important;
+			margin: 5% 0 0 7%;
+			text-align: left;
+		}
+		.colum3 {
+			width: 40% !important;
+			margin: 5% 0 0 7%;
+			text-align: left;
+		}
+		.colum4 {
+			width: 40% !important;
+			margin: 5% 0 0 5%;
+		}
+	}
+
+	@media screen and (max-width: 564px) {
+		.colum1 {
+			width: 100% !important;
+			margin: 5% 0 0 0;
+			text-align: left;
+		}
+		.colum2 {
+			width: 100% !important;
+			margin: 5% 0 0 7%;
+			text-align: left;
+		}
+		.colum3 {
+			width: 40% !important;
+			margin: 5% 0 0 7%;
+			text-align: left;
+		}
+		.colum4 {
+			width: 40% !important;
+			margin: 5% 0 0 5%;
+		}
+	}
+</style>

@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Result from '../views/Result.vue';
-import Search from '../views/Search.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -12,6 +10,16 @@ const routes: RouteRecordRaw[] = [
     path: '/search',
     name: 'Search',
     component: () => import(/* webpackChunkName: "search" */ '../views/Search.vue'),
+  },
+  {
+    path: '/list',
+    name: 'List',
+    component: () => import(/* webpackChunkName: "list" */ '../views/List.vue'),
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import(/* webpackChunkName: "calendar" */ '../views/Calendar.vue'),
   },
 ];
 

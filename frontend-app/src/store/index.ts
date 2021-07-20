@@ -22,6 +22,10 @@ interface StringKeyStringObject {
 		[key: string]: string;
 }
 
+interface MealInfo {
+		[key: string]: StringKeyAnyObject[];
+}
+
 const genreEnglish: string[] = [
   "gram",
   "gramPerPiece",
@@ -110,15 +114,20 @@ genreEnglish.forEach(
 		(elem) => (foodFormInfo[elem] = 0)
 	);
 
+var recipeinfo: StringKeyMultiObject = {
+}
+var mealInfo: MealInfo = {
+  "2021-07-02-1.朝食": [recipeinfo]
+}
 const category:
-string[] = ["穀類", "野菜", "果物", "いも・でん粉", "砂糖・甘味", "豆・種実", "きのこ", "海藻", "魚介類", "肉", "乳製品・卵", "調味料・香辛料・油", "飲料・酒"];
+string[] = ["穀類", "野菜", "果物", "いも・でん粉", "砂糖・甘味", "豆・種実", "きのこ", "海藻", "魚介類", "肉", "乳製品・卵", "調味料・香辛料・油", "飲料・酒","主食","おかず・加工食品","おやつ・おつまみ・お菓子"];
 const categoryInfo: StringKeyAnyObject = categoryInfoJson;
 const foodInfo: StringKey_StringKeyNumber_Object = foodInfoJson;
 const allFood = result();
 function result() {
   var result = [""];
-  for (var i = 2; i < 15; i++){
-    result = result.concat(categoryInfo[i]);
+  for (var i = 0; i < category.length; i++){
+    result = result.concat(categoryInfo[i+2]);
   }
   return result
 }
@@ -136,9 +145,9 @@ export default createStore({
     category: category,
     categoryInfo: categoryInfo,
     foodInfo: foodInfo,
-    formNumber: 1,
-    formArray: [1],
-    recipeArray: [""],
+    registerArray: [recipeinfo],
+    mealArray: mealInfo,
+    recipeArray: [recipeinfo],
     foodArray: [""],
     categoryArray: ["1"],
     gramArray: [0],
@@ -150,27 +159,43 @@ export default createStore({
     allFood: allFood,
     responseData: [],
     portion: 1,
+    mobile: false,
+    dayMealFlag: false,
+    registerFlag: false,
+    recipeInfoFlag: false,
+    events: [
+						{ title: "1.朝食", date: "2021-07-02" },
+					],
   },
   getters: {
   },
   mutations: {
+    initialize: function (state) {
+      state.events = [];
+      state.mealArray = {};
+      state.registerArray = [];
+    },
+    handleResize: function (state) {
+      if (window.innerWidth <= 757) {
+				state.mobile = true;
+      } else {
+        state.mobile = false;
+      }
+    },
     getDefaultState: function(state) {
-        state.price=0;
-        state.gram=0;
-        state.formNumber=1;
-        state.formArray=[1];
-        state.recipeArray=[""];
-        state.foodArray=[""];
-        state.categoryArray=["1"];
-        state.gramArray=[0];
-        state.typeArray=[0];
-        state.typeTotal=0;
-        state.type="";
-        state.detailFlag=false;
-        state.responseData = [];
-        genreEnglish.forEach(
-            (elem) => (allInfo[elem] = 0)
-        );
+      state.price=0;
+      state.foodArray=[""];
+      state.categoryArray=["1"];
+      state.gramArray=[0];
+      state.typeArray=[0];
+      state.typeTotal=0;
+      state.type="";
+      state.detailFlag=false;
+      state.responseData = [];
+      genreEnglish.forEach(
+          (elem) => (state.allInfo[elem] = 0)
+      );
+      console.log(state.allInfo)
     },
     listUpdate: function (state) {
       for (var i = 0; i < state.genre.length; i++) {
@@ -188,9 +213,9 @@ export default createStore({
       }
     },
     setPortion: function (state, payload) {
-      var coefficient = state.portion/payload.portion
+      var coefficient = payload.portion/state.portion
       state.portion = payload.portion
-      state.gram = Number((state.gram * coefficient).toFixed(2));
+      state.allInfo["gram"] = Number((state.allInfo["gram"] * coefficient).toFixed(2));
       genreEnglish.forEach(
           (elem) => (allInfo[elem] = 0)
       );
@@ -207,63 +232,113 @@ export default createStore({
       }
     },
     searchRecipe: function (state, payload) {
-      state.responseData = payload.info;
+      state.responseData = payload.info["food"];
+      state.portion = payload.info["servings_for_yield"];
       state.foodArray = [];
       state.gramArray = [];
       state.categoryArray = [];
-      state.formArray = [];
-      state.formNumber = 0;
+
       for (var i = 0; i<state.responseData.length; i++) {
         var elem: StringKeyStringObject = state.responseData[i];
-        state.formNumber++;
-        state.formArray.push(state.formNumber)
         if (elem != undefined) {
           if (elem["gram"] != undefined) {
             state.gramArray.push(Number(elem["gram"]));
-            state.gram += state.gramArray[i];
+            state.allInfo["gram"] += state.gramArray[i];
           } else {
             state.gramArray.push(0);
           }
           if (elem["nameJapanese"] != undefined) {
             state.foodArray.push(elem["nameJapanese"]);
-            var foodInfo = state.foodInfo[state.foodArray[i]]
             for (const genre of state.genreEnglish) {
               if (elem[genre] != undefined) {
                 state.allInfo[genre] += (state.gramArray[i] / 100) * Number(elem[genre]);
                 state.allInfo[genre] = Number(Number(state.allInfo[genre]).toFixed(2));
-              } else {
-                state.allInfo[genre] += 0;
               }
             }
           } else {
             state.foodArray.push("");
-            for (const genre of state.genreEnglish) {
-              state.allInfo[genre] += 0;
-            }
           }
         } else {
           state.foodArray.push("");
           state.gramArray.push(0);
-          for (const genre of state.genreEnglish) {
-            state.allInfo[genre] += 0;
-          }
         }
-        for (var j = 2; j < 15; j++){
-          if (state.categoryInfo[j].includes(state.foodArray[i])) {
-            state.categoryArray[i] = String(j)
+        for (var j = 0; j < category.length; j++){
+          if (state.categoryInfo[j+2].includes(state.foodArray[i])) {
+            state.categoryArray[i] = String(j+2)
           }
         }
       }
-      state.gram = Number(state.gram.toFixed(2));
+      state.allInfo["gram"] = Number(state.allInfo["gram"].toFixed(2));
     },
-    register: function (state, payload) {
-      if (state.recipeArray[0] == "") {
-        state.recipeArray[0] = payload.recipename
+    registerMeal: function (state, payload) {
+      var index = payload.day+"-"+payload.type
+      if (state.mealArray[index] == undefined) {
+        state.mealArray[index] = [];
+      }
+      for (var i = 0; i < state.registerArray.length; i++){
+        state.mealArray[index][i] = {}
+        Object.assign(state.mealArray[index][i], state.registerArray[i]);
+      }
+      if (!state.events.includes({ title: payload.type, date: payload.day })) {
+        state.events.push({title:payload.type,date:payload.day})
+      }
+      state.registerArray = [];
+    },
+    registerRecipe: function (state, payload) {
+      var flag = true
+      for (const elem of state.foodArray) {
+        if (elem == "") {
+          flag = false
+        }
+      }
+      if (flag) {
+        var gram = state.allInfo["gram"];
+        if (state.recipeArray[0]["nameJapanese"] == undefined) {
+          genreEnglish.forEach(
+            (elem) => (state.recipeArray[0][elem] = Number((state.allInfo[elem]/gram*100).toFixed(2)))
+            );
+          state.recipeArray[0]["nameJapanese"] = payload.recipename;
+        } else {
+            state.recipeArray.push({})
+            genreEnglish.forEach(
+              (elem) => (state.recipeArray[state.recipeArray.length - 1][elem] = Number((state.allInfo[elem]/gram*100).toFixed(2)))
+            );
+            state.recipeArray[state.recipeArray.length - 1]["nameJapanese"] = payload.recipename;
+        }
       } else {
-        state.recipeArray.push(payload.recipename)
+        alert("未選択の欄があります！");
       }
     },
-    addForm: function (state) {
+     addRegisterForm: function (state) {
+       var flag = true
+       for (const elem of state.registerArray) {
+        if (elem["nameJapanese"] == undefined) {
+          flag = false
+        }
+       }
+       if (flag) {
+        state.registerArray.push({});
+      } else {
+        alert("未選択の欄があります！");
+      }
+    },
+    removeRegisterForm: function (state) {
+      if (state.registerArray.length > 1) {
+        var formNumber = state.registerArray.length-1
+        state.registerArray.splice(formNumber, 1)
+      }
+    },
+    selectRecipe: function (state, payload) {
+      Object.assign(state.registerArray[payload.id - 1], state.recipeArray[payload.recipe]);
+      genreEnglish.forEach(
+        (elem) => {
+          if (elem != "nameJapanese") {
+            state.registerArray[payload.id - 1][elem] = Number(Number(state.recipeArray[payload.recipe][elem]) / 100 * payload.gram).toFixed(2)
+          }
+        }
+      );
+    },
+    addFoodForm: function (state) {
       var flag = true
       for (const elem of state.foodArray) {
         if (elem == "") {
@@ -273,33 +348,31 @@ export default createStore({
       if (flag) {
         state.foodArray.push("");
         state.gramArray.push(0);
-        state.formNumber++;
-        state.formArray.push(state.formNumber)
+        state.categoryArray.push("1");
       } else {
         alert("未選択の欄があります！");
       }
     },
-    removeForm: function (state) {
-      if (state.formNumber > 1) {
-        state.formNumber--;
-        if (state.foodArray[state.formNumber] != "") {
+    removeFoodForm: function (state) {
+      if (state.foodArray.length > 1) {
+        var formNumber = state.foodArray.length-1
+        if (state.foodArray[formNumber] != "") {
           var foodInfo =
-            state.foodInfo[state.foodArray[state.formNumber]];
-          state.gram -= state.gramArray[state.formNumber] * 1;
+            state.foodInfo[state.foodArray[formNumber]];
+          state.allInfo["gram"] -= state.gramArray[formNumber] * 1;
           for (var i = 0; i < state.genre.length; i++) {
             if (foodInfo[state.genre[i]] != undefined) {
               state.allInfo[state.genreEnglish[i+4]] -=
-                (state.gramArray[state.formNumber] / 100) *
+                (state.gramArray[formNumber] / 100) *
                 foodInfo[state.genre[i]];
             }
             state.allInfo[state.genreEnglish[i+4]] = Number(state.allInfo[state.genreEnglish[i+4]].toFixed(2));
           }
-          state.gram = Number(state.gram.toFixed(2));
+          state.allInfo["gram"] = Number(state.allInfo["gram"].toFixed(2));
         }
-        state.formArray.splice(state.formNumber, 1)
-        state.foodArray.splice(state.formNumber, 1)
-        state.categoryArray.splice(state.formNumber, 1)
-        state.gramArray.splice(state.formNumber, 1)
+        state.foodArray.splice(formNumber, 1)
+        state.categoryArray.splice(formNumber, 1)
+        state.gramArray.splice(formNumber, 1)
       }
     },
     changeFood: function (state, payload) {
@@ -318,7 +391,7 @@ export default createStore({
           }
           state.allInfo[state.genreEnglish[i+4]] = Number(state.allInfo[state.genreEnglish[i+4]].toFixed(2));
         }
-        state.gram = Number(state.gram.toFixed(2));
+        state.allInfo["gram"] = Number(state.allInfo["gram"].toFixed(2));
       } else {
         for (var i = 0; i < state.genre.length; i++) {
           if (foodInfo[state.genre[i]] != undefined) {
@@ -342,9 +415,9 @@ export default createStore({
           state.allInfo[state.genreEnglish[i+4]] = Number(state.allInfo[state.genreEnglish[i+4]].toFixed(2));
         }
       }
-      state.gram -= oldGram;
-      state.gram += Number(payload.gram);
-      state.gram = Number((state.gram).toFixed(2));
+      state.allInfo["gram"] -= oldGram;
+      state.allInfo["gram"] += Number(payload.gram);
+      state.allInfo["gram"] = Number((state.allInfo["gram"]).toFixed(2));
     },
     changeCategory: function (state, payload) {
       var oldGram = state.gramArray[Number(payload.id) - 1];
@@ -359,8 +432,8 @@ export default createStore({
           state.allInfo[state.genreEnglish[i+4]] = Number(state.allInfo[state.genreEnglish[i+4]].toFixed(2));
         }
       }
-      state.gram -= oldGram;
-      state.gram = Number((state.gram).toFixed(2));
+      state.allInfo["gram"] -= oldGram;
+      state.allInfo["gram"] = Number((state.allInfo["gram"]).toFixed(2));
       state.categoryArray[Number(payload.id) - 1] = payload.category
       state.foodArray[Number(payload.id) - 1] = ""
     },
@@ -414,12 +487,29 @@ export default createStore({
     },
     categoryValidation: function (state, payload) {
       if (state.categoryArray[payload.id - 1] == "1") {
-        for (var i = 2; i < 15; i++){
-          if (state.categoryInfo[i].includes(state.foodArray[payload.id - 1])) {
-            state.categoryArray[payload.id - 1] = String(i)
+        for (var i = 0; i < category.length; i++){
+          if (state.categoryInfo[i+2].includes(state.foodArray[payload.id - 1])) {
+            state.categoryArray[payload.id - 1] = String(i+2)
           }
         }
       }
+    },
+    dayMealInfoFormChange: function (state, payload) {
+      state.dayMealFlag = !state.dayMealFlag;
+    },
+    registerFormChange: function (state, payload) {
+      state.registerFlag = !state.registerFlag;
+    },
+    recipeInfoOpen: function (state, payload) {
+      var recipe = state.recipeArray[payload.recipe-1];
+      genreEnglish.forEach(
+        (elem) => (
+          state.allInfo[elem] = Number((Number(recipe[elem])/100*payload.gram).toFixed(2)))
+            );
+      state.recipeInfoFlag = !state.recipeInfoFlag;
+    },
+    recipeInfoClose: function (state, payload) {
+      state.recipeInfoFlag = !state.recipeInfoFlag;
     },
   },
   actions: {
